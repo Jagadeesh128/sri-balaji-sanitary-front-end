@@ -1,0 +1,100 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a3c6e, #4a7bc8);
+}
+.logo {
+  width: 120px;   /* or whatever size you want */
+  height: auto;   /* keeps aspect ratio */
+  display: block;
+  margin: 0 auto 20px; /* centers it and adds spacing */
+}
+
+.login-box {
+  background: white;
+  padding: 40px 36px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.login-box h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  color: #1a3c6e;
+}
+
+.login-subtitle {
+  margin: 0 0 20px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.login-box label {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: #333;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.login-box input:focus {
+  outline: none;
+  border-color: #1a3c6e;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 22px;
+  padding: 11px;
+  background-color: #1a3c6e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.login-btn:hover {
+  background-color: #142f57;
+}
+
+.login-error {
+  background-color: #fdecea;
+  color: #b71c1c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+
+.login-hint {
+  margin-top: 14px;
+  font-size: 0.75rem;
+  color: #999;
+}

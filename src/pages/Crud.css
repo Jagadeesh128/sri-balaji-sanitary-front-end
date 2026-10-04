@@ -1,0 +1,158 @@
+.crud-page {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.crud-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.crud-content h2 {
+  color: #1a3c6e;
+}
+
+.crud-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 18px;
+}
+
+.crud-form input {
+  flex: 1 1 180px;
+  padding: 9px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.crud-form-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.crud-lookup {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.crud-lookup input {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.crud-btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #e5e7eb;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.crud-btn.primary {
+  background-color: #1a3c6e;
+  color: white;
+}
+
+.crud-btn.primary:hover {
+  background-color: #142f57;
+}
+
+.crud-btn.small {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  margin-right: 6px;
+}
+
+.crud-btn.danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.crud-btn.danger:hover {
+  background-color: #dc2626;
+}
+
+.crud-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.crud-table th,
+.crud-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.crud-table th {
+  background-color: #1a3c6e;
+  color: white;
+}
+
+.crud-empty {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+}
+
+.crud-success {
+  background-color: #e6f9ee;
+  color: #146c43;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+
+.crud-error {
+  background-color: #fdecea;
+  color: #b71c1c;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+.search-results {
+  position: absolute;       /* makes it float under the input */
+  background: #fff;         /* white background */
+  border: 1px solid #ccc;   /* subtle border */
+  max-height: 200px;        /* limit height */
+  overflow-y: auto;         /* scroll when too many items */
+  width: 100%;              /* match input width */
+  z-index: 1000;            /* keep above other elements */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-results li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.search-results li:hover {
+  background: #f0f0f0;
+}
+@media print {
+  .no-print {
+    display: none;
+  }
+}

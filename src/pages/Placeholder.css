@@ -1,0 +1,33 @@
+.placeholder-page {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: calc(100vh - 70px);
+  color: #444;
+}
+
+.placeholder-content h2 {
+  color: #1a3c6e;
+  margin-bottom: 8px;
+}
+
+.back-btn {
+  margin-top: 24px;
+  padding: 10px 22px;
+  background-color: #1a3c6e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background-color: #142f57;
+}
