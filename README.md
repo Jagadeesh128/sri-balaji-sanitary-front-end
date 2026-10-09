@@ -1,83 +1,97 @@
-# Sri Balaji Sanitary & Tiles
+# Sri Balaji Sanitary & Tiles - Frontend
 
-A React frontend for managing quotations, stock, and product categories.
+A React application for managing quotations, stock, and categories.
 
-## Requirements
+## Tech Stack
+- React 18 + React Router v6
+- Axios for API calls
+- Plain CSS (no external UI framework required)
+- react-icons for dashboard icons
 
-- Node.js 14 or later
-- npm
-- The backend API, if using stock and category management
-
-## Getting started
-
-Install dependencies and start the development server:
+## Getting Started
 
 ```bash
 npm install
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+The app runs at `http://localhost:3000`.
 
-Available scripts:
-
-| Command | Description |
-| --- | --- |
-| `npm start` | Start the development server |
-| `npm test` | Run tests in watch mode |
-| `npm run build` | Create an optimized production build in `build/` |
-
-## Demo login
-
-The frontend currently uses hardcoded demo credentials; authentication is not
-connected to the backend:
-
+## Login
+This app uses hardcoded credentials (no backend auth call):
 - **Username:** `admin`
 - **Password:** `admin123`
 
-Do not use these credentials as production authentication.
-
 ## Backend API
+The frontend expects a backend running at `http://localhost:8080` with these endpoints:
 
-The API client in `src/services/api.js` uses `http://localhost:8080` as its
-base URL. Update `BASE_URL` there if your backend runs at a different address.
-The backend must allow cross-origin requests from `http://localhost:3000`.
+### Stock Management (`/inventory`)
+- `POST /inventory` — Add stock
+- `GET /inventory` — List all stock
+- `GET /inventory/{id}` — View stock by ID
+- `PUT /inventory/{id}` — Update stock
+- `DELETE /inventory/{id}` — Delete stock
 
-The frontend uses these endpoints:
+### Categories (`/discounts`)
+- `POST /discounts` — Create or update a category (by brand)
+- `GET /discounts` — List all categories
+- `GET /discounts/{brand}` — View category by brand
+- `DELETE /discounts/{brand}` — Delete category by brand
 
-| Feature | Method and path |
-| --- | --- |
-| List stock | `GET /inventory` |
-| Add stock | `POST /inventory` |
-| Get stock by ID | `GET /inventory/{id}` |
-| Update stock | `PUT /inventory/{id}` |
-| Delete stock | `DELETE /inventory/{id}` |
-| Search stock | `GET /inventory/search?query={query}` |
-| List categories | `GET /discounts` |
-| Get category by brand | `GET /discounts/{brand}` |
-| Create or update a category | `POST /discounts` |
-| Delete category by brand | `DELETE /discounts/{brand}` |
-| Save a quotation | `POST /quotations` |
+The base URL is set in `src/services/api.js` (`BASE_URL`). Change it there if your backend runs elsewhere.
 
-Configure CORS on the backend for the frontend origin. For example, a Spring
-Boot backend can allow `http://localhost:3000` for the required API routes and
-HTTP methods.
+## CORS Setup (Backend Side)
+Since the frontend (`localhost:3000`) and backend (`localhost:8080`) run on different ports, your **backend** must allow cross-origin requests from the frontend. This must be configured on the backend server, not the frontend.
 
-## Project structure
+**Example — Spring Boot (Java):**
+```java
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
+}
+```
 
-```text
+**Example — Express (Node.js):**
+```js
+const cors = require("cors");
+app.use(cors({ origin: "http://localhost:3000" }));
+```
+
+**Example — Flask (Python):**
+```python
+from flask_cors import CORS
+CORS(app, origins=["http://localhost:3000"])
+```
+
+Once CORS is enabled on the backend, the Stock Management and Categories pages will be able to read/write data successfully.
+
+## Project Structure
+```
 src/
-  components/   Shared UI components and route guards
-  context/      Authentication state
-  pages/        Login, dashboard, stock, category, and quotation pages
-  services/     Backend API client
-  App.js        Application routes
-  index.js      React entry point
+  components/
+    Header.js          # Top header: logo, business name, logout
+    ProtectedRoute.js   # Guards routes behind login
+  context/
+    AuthContext.js      # Hardcoded login/logout state
+  pages/
+    Login.js
+    Dashboard.js         # 4 tile buttons
+    Quotations.js        # Placeholder page
+    ViewQuotations.js    # Placeholder page
+    StockManagement.js   # CRUD for /inventory
+    Categories.js        # CRUD for /discounts
+  services/
+    api.js               # Axios instance + API functions
+  App.js                 # Routes
+  index.js
 ```
 
 ## Notes
-
-- Replace the placeholder logo references in `Header.js` and `Login.js` with
-  your own asset if needed.
-- The stock and category form fields are based on the current frontend model;
-  keep them aligned with the backend API's request and response fields.
+- Replace the placeholder logo image URL in `Header.js` and `Login.js` with your actual logo file if desired (e.g. place it in `public/` and reference it as `/logo.png`).
+- Field names in the Stock and Categories forms (`name`, `brand`, `quantity`, `price`, `category`, `discountPercent`) are assumptions based on typical inventory/discount models — adjust them in `StockManagement.js`, `Categories.js`, and your backend DTOs to match your actual API schema.
