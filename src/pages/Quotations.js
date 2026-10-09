@@ -10,8 +10,9 @@ import "./Quotations.css";
 // Edit these to your business details (shown on printed quotation)
 const COMPANY = {
   name: "Sri Balaji Sanitary & Tiles",
-  address: "",
-  contact: "Phone: 0000000000  |  GSTIN: XXXXXXXXXXXX",
+  address: "Opposite Republic Club, Big Mosque Strreet,Srikalahasti",
+  contact: "Phone: 7330600742  ",
+  Note : "This is a computer generated quotation and does not require signature.",
 };
 
 const CATEGORIES = ["A", "B", "C", "D", "E"];
