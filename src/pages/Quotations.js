@@ -4,6 +4,7 @@ import {
   searchInventory,
   getDiscountByBrand,
   saveQuotation,
+  updateQuotation,
 } from "../services/api";
 import "./Quotations.css";
 
@@ -11,8 +12,8 @@ import "./Quotations.css";
 const COMPANY = {
   name: "Sri Balaji Sanitary & Tiles",
   address: "Opposite Republic Club, Big Mosque Strreet,Srikalahasti",
-  contact: "Phone: 7330600742  ",
-  Note : "This is a computer generated quotation and does not require signature.",
+  contact: "Phone: 7330600742",
+  Note: "This is a computer generated quotation and does not require signature.",
 };
 
 const CATEGORIES = ["A", "B", "C", "D", "E"];
@@ -37,10 +38,32 @@ const money = (n) =>
     maximumFractionDigits: 2,
   });
 
-export default function Quotations() {
-  // ---------- state (same data as before, plus UI state) ----------
-  const [customer, setCustomer] = useState(emptyCustomer);
-  const [products, setProducts] = useState([]);
+// Converts a quotation loaded from the backend into form state
+const fromSaved = (q) => ({
+  customer: {
+    name: q.customerName || "",
+    phone: q.contactNo || "",
+    category: q.category || "",
+  },
+  products: (q.products || []).map((p) => ({
+    productId: p.productId,
+    productName: p.productName,
+    make: p.make || "",
+    mrp: Number(p.mrp) || 0,
+    discount: Number(p.discount) || 0,
+    quantity: Number(p.quantity) || 1,
+  })),
+});
+
+export default function Quotations({ quotation = null, onDone }) {
+  const isEdit = Boolean(quotation?.id);
+  const initial = quotation ? fromSaved(quotation) : null;
+
+  // ---------- state ----------
+  const [customer, setCustomer] = useState(
+    initial ? initial.customer : emptyCustomer
+  );
+  const [products, setProducts] = useState(initial ? initial.products : []);
   const [currentProduct, setCurrentProduct] = useState(emptyProduct);
 
   const [searchText, setSearchText] = useState("");
@@ -50,7 +73,7 @@ export default function Quotations() {
 
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState(null); // { type: "success" | "error", text }
+  const [notice, setNotice] = useState(null); // { type, text }
 
   const searchRef = useRef(null);
   const qtyRef = useRef(null);
@@ -78,7 +101,7 @@ export default function Quotations() {
   );
   const totalSaving = round2(totals.mrpTotal - totals.amount);
 
-  // ---------- notices auto-dismiss ----------
+  // ---------- notices ----------
   const notify = (type, text) => setNotice({ type, text });
   useEffect(() => {
     if (!notice) return;
@@ -265,7 +288,7 @@ export default function Quotations() {
     searchRef.current?.focus();
   };
 
-  // ---------- save (same payload shape as before) ----------
+  // ---------- save (create) or update (edit) ----------
   const saveQuotationData = async () => {
     if (!canSave) {
       notify("error", `Please fill: ${missing.join(", ")}`);
@@ -273,13 +296,21 @@ export default function Quotations() {
     }
     setSaving(true);
     try {
-      const quotation = {
+      const payload = {
         customerName: customer.name.trim(),
         contactNo: customer.phone,
         category: customer.category,
+        createdAt:new Date().toISOString(),
         products: products.map((p) => ({ ...p, finalPrice: lineTotalOf(p) })),
       };
-      await saveQuotation(quotation);
+
+      if (isEdit) {
+        await updateQuotation(quotation.id, payload);
+        onDone?.("Quotation updated successfully.");
+        return;
+      }
+
+      await saveQuotation(payload);
       notify("success", "Quotation saved successfully.");
       setCustomer(emptyCustomer);
       setProducts([]);
@@ -291,7 +322,7 @@ export default function Quotations() {
     }
   };
 
-  // ---------- print (uses the print-only template below) ----------
+  // ---------- print ----------
   const handlePrint = () => {
     if (!products.length) {
       notify("error", "Add products before printing.");
@@ -300,7 +331,9 @@ export default function Quotations() {
     window.print();
   };
 
-  const today = new Date().toLocaleDateString("en-IN", {
+  const today = (
+    isEdit && quotation.createdAt ? new Date(quotation.createdAt) : new Date()
+  ).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -320,7 +353,18 @@ export default function Quotations() {
         {/* Top bar */}
         <div className="qt-topbar">
           <div>
-            <h2>Create Quotation</h2>
+            <div className="qt-title-row">
+              {isEdit && (
+                <button className="qt-btn" onClick={() => onDone?.()}>
+                  ← Back
+                </button>
+              )}
+              <h2>
+                {isEdit
+                  ? `Edit Quotation ${quotation.quotationNo || ""}`
+                  : "Create Quotation"}
+              </h2>
+            </div>
             <span className="qt-date">Date: {today}</span>
           </div>
           <div className="qt-shortcuts">
@@ -501,7 +545,7 @@ export default function Quotations() {
                       </tr>
                     ) : (
                       products.map((p, idx) => (
-                        <tr key={p.productId}>
+                        <tr key={`${p.productId}-${idx}`}>
                           <td className="c-sl">{idx + 1}</td>
                           <td>
                             <div className="qt-pname">{p.productName}</div>
@@ -602,11 +646,19 @@ export default function Quotations() {
 
         {/* Bottom action bar */}
         <div className="qt-actions">
-          <button className="qt-btn ghost" onClick={clearAll}>
-            Clear All
-          </button>
+          {!isEdit ? (
+            <button className="qt-btn ghost" onClick={clearAll}>
+              Clear All
+            </button>
+          ) : (
+            <span />
+          )}
           <div className="qt-actions-right">
-            <button className="qt-btn" onClick={handlePrint} disabled={!products.length}>
+            <button
+              className="qt-btn"
+              onClick={handlePrint}
+              disabled={!products.length}
+            >
               🖨 Print Quotation
             </button>
             <button
@@ -614,14 +666,18 @@ export default function Quotations() {
               onClick={saveQuotationData}
               disabled={!canSave}
             >
-              {saving ? "Saving…" : "Save Quotation"}
+              {saving
+                ? "Saving…"
+                : isEdit
+                ? "Update Quotation"
+                : "Save Quotation"}
             </button>
           </div>
         </div>
       </div>
 
       {/* PRINT TEMPLATE: only customer-facing fields (no MRP, no discount %) */}
-      <div className="print-only">
+      <div className="print-only" ref={null}>
         <div className="pr-company">
           <h1>{COMPANY.name}</h1>
           <p>{COMPANY.address}</p>
@@ -632,11 +688,20 @@ export default function Quotations() {
 
         <div className="pr-meta">
           <div>
-            <p><b>To:</b> {customer.name}</p>
-            <p><b>Phone:</b> {customer.phone}</p>
+            <p>
+              <b>To:</b> {customer.name}
+            </p>
+            <p>
+              <b>Phone:</b> {customer.phone}
+            </p>
           </div>
           <div className="pr-right">
-            <p><b>Date:</b> {today}</p>
+            <p>
+              <b>Quotation No:</b> {isEdit ? quotation.quotationNo : "Draft"}
+            </p>
+            <p>
+              <b>Date:</b> {today}
+            </p>
           </div>
         </div>
 
@@ -653,7 +718,7 @@ export default function Quotations() {
           </thead>
           <tbody>
             {products.map((p, idx) => (
-              <tr key={p.productId}>
+              <tr key={`${p.productId}-${idx}`}>
                 <td>{idx + 1}</td>
                 <td>{p.productId}</td>
                 <td>{p.productName}</td>
@@ -665,15 +730,19 @@ export default function Quotations() {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="5" className="r"><b>Grand Total</b></td>
-              <td className="r"><b>₹{money(totals.amount)}</b></td>
+              <td colSpan="5" className="r">
+                <b>Grand Total</b>
+              </td>
+              <td className="r">
+                <b>₹{money(totals.amount)}</b>
+              </td>
             </tr>
           </tfoot>
         </table>
 
         <div className="pr-footer">
           <p>This quotation is valid for 15 days from the date of issue.</p>
-          <div className="pr-sign">Authorized Signatory</div>
+          <p className="pr-note">{COMPANY.Note}</p>
         </div>
       </div>
     </div>

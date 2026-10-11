@@ -26,4 +26,9 @@ export const deleteCategory = (brand) => api.delete(`/discounts/${brand}`);
 
 export const getDiscountByBrand = (brand) => api.get(`/discounts/${brand}`);
 export const saveQuotation = (data) => api.post("/quotations", data);
+
+export const getQuotations = () => api.get("/quotations");
+export const getQuotationById = (id) => api.get(`/quotations/${id}`);
+export const updateQuotation = (id, data) => api.put(`/quotations/${id}`, data);
+
 export default api;

@@ -1,0 +1,124 @@
+.vq-screen {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px 32px;
+}
+
+/* Top bar */
+.vq-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.vq-topbar h2 { margin: 0; font-size: 22px; }
+.vq-sub { color: #6b7788; font-size: 13px; }
+
+.vq-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.vq-stat {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+.vq-stat span {
+  font-size: 11px;
+  color: #6b7788;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.vq-stat b { font-size: 16px; }
+
+/* Filters */
+.vq-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.vq-search {
+  flex: 1;
+  min-width: 240px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #dde3ec;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+.vq-search:focus {
+  border-color: #1f5fbf;
+  box-shadow: 0 0 0 3px rgba(31, 95, 191, 0.15);
+}
+.vq-filters select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #dde3ec;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+}
+.vq-count { margin-left: auto; font-size: 12px; color: #6b7788; }
+
+/* Month groups */
+.vq-month {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.vq-month-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f7f9fc;
+  border-bottom: 1px solid #dde3ec;
+}
+.vq-month-head h3 { margin: 0; font-size: 15px; }
+.vq-month-head span { font-size: 13px; color: #6b7788; }
+
+/* Table */
+.vq-table-wrap { overflow-x: auto; }
+.vq-row { cursor: pointer; }
+.vq-row:hover td { background: #f0f6fd; }
+.vq-open {
+  color: #1f5fbf;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.vq-empty {
+  text-align: center;
+  padding: 48px;
+  color: #6b7788;
+  background: #fff;
+  border: 1px dashed #dde3ec;
+  border-radius: 10px;
+}
+.vq-error {
+  background: #fdecec;
+  color: #d64545;
+  border: 1px solid #f3c6c6;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .vq-search { min-width: 100%; }
+  .vq-count { margin-left: 0; }
+}

@@ -34,6 +34,7 @@
   color: #fff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   animation: qt-slide 0.2s ease-out;
+  max-width: 420px;
 }
 .qt-toast-success { background: var(--qt-success); }
 .qt-toast-error { background: var(--qt-danger); }
@@ -52,6 +53,7 @@
   margin-bottom: 16px;
 }
 .qt-topbar h2 { margin: 0; font-size: 22px; }
+.qt-title-row { display: flex; align-items: center; gap: 10px; }
 .qt-date { color: var(--qt-muted); font-size: 13px; }
 .qt-shortcuts { color: var(--qt-muted); font-size: 12px; }
 kbd {
@@ -262,6 +264,7 @@ kbd {
   padding: 10px 8px;
   border-bottom: 2px solid var(--qt-border);
   background: #fafbfd;
+  white-space: nowrap;
 }
 .qt-table td {
   padding: 10px 8px;
@@ -296,7 +299,13 @@ kbd {
   border-radius: 10px;
   padding: 16px;
 }
-.qt-summary-card h4 { margin: 0 0 12px; font-size: 14px; color: var(--qt-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+.qt-summary-card h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--qt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
 .qt-sum-row {
   display: flex;
   justify-content: space-between;
@@ -342,8 +351,19 @@ kbd {
 }
 .qt-actions-right { display: flex; gap: 10px; }
 
-/* Print-only template: hidden on screen */
-.print-only { display: none; }
+/* Print-only template: off-screen so it can still be rendered to PDF */
+.print-only {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 794px;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #000;
+  font-size: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+}
 
 @media (max-width: 1024px) {
   .qt-layout { grid-template-columns: 1fr; }
@@ -373,9 +393,7 @@ kbd {
     position: absolute;
     left: 0; top: 0;
     width: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #000;
-    font-size: 12px;
+    padding: 0;
   }
 
   .pr-company { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; }
@@ -398,11 +416,5 @@ kbd {
   .pr-table tfoot td { font-size: 13px; }
 
   .pr-footer { margin-top: 28px; font-size: 11px; }
-  .pr-sign {
-    margin-top: 40px;
-    text-align: right;
-    border-top: 1px solid #000;
-    display: inline-block;
-    padding-top: 4px;
-  }
+  .pr-note { margin-top: 6px; font-style: italic; }
 }
