@@ -20,7 +20,8 @@ export const searchInventory = (query) => api.get(`/inventory/search?query=${enc
 
 // ---------- Discounts (Categories) ----------
 export const getCategories = () => api.get("/discounts");
-export const getCategoryByBrand = (brand) => api.get(`/discounts/${brand}`);
+export const getCategoryByBrand = (brand) =>
+  api.get(`/discounts/${encodeURIComponent(brand)}`);
 export const saveCategory = (data) => api.post("/discounts", data);
 export const deleteCategory = (brand) => api.delete(`/discounts/${brand}`);
 

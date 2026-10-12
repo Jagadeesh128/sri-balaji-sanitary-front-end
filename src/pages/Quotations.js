@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Header from "../components/Header";
 import {
   searchInventory,
-  getDiscountByBrand,
+  getCategoryByBrand,
   saveQuotation,
   updateQuotation,
 } from "../services/api";
@@ -32,11 +32,34 @@ const emptyProduct = {
 const round2 = (n) => Math.round(n * 100) / 100;
 const unitPriceOf = (p) => p.mrp - (p.mrp * p.discount) / 100;
 const lineTotalOf = (p) => round2(unitPriceOf(p) * p.quantity);
+const discountFieldOf = (category) => `category_${category}`;
 const money = (n) =>
   Number(n || 0).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+
+const fetchDiscountForBrand = async (brand, category) => {
+  if (!brand) throw new Error("Product brand is missing.");
+
+  const response = await getCategoryByBrand(brand);
+  if (!response.data) {
+    throw new Error(`No discount categories found for brand "${brand}".`);
+  }
+
+  const configuredDiscount = response.data[discountFieldOf(category)];
+  const discountText = String(configuredDiscount ?? "0").trim();
+  const discount = Number(
+    discountText.endsWith("%")
+      ? discountText.slice(0, -1).trim()
+      : discountText
+  );
+  if (!Number.isFinite(discount) || discount < 0 || discount > 100) {
+    throw new Error(`Invalid discount for brand "${brand}".`);
+  }
+
+  return discount;
+};
 
 // Converts a quotation loaded from the backend into form state
 const fromSaved = (q) => ({
@@ -72,12 +95,14 @@ export default function Quotations({ quotation = null, onDone }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const [adding, setAdding] = useState(false);
+  const [discountLoading, setDiscountLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null); // { type, text }
 
   const searchRef = useRef(null);
   const qtyRef = useRef(null);
   const searchSeq = useRef(0);
+  const discountFetchSeq = useRef(0);
 
   // ---------- validation ----------
   const isPhoneValid = /^\d{10}$/.test(customer.phone);
@@ -87,7 +112,7 @@ export default function Quotations({ quotation = null, onDone }) {
     !customer.category && "category",
     products.length === 0 && "at least one product",
   ].filter(Boolean);
-  const canSave = missing.length === 0 && !saving;
+  const canSave = missing.length === 0 && !saving && !adding && !discountLoading;
 
   // ---------- totals ----------
   const totals = products.reduce(
@@ -156,9 +181,41 @@ export default function Quotations({ quotation = null, onDone }) {
   });
 
   // ---------- customer ----------
-  const handleCustomerChange = (e) => {
+  const handleCustomerChange = async (e) => {
     const { name, value } = e.target;
     const v = name === "phone" ? value.replace(/\D/g, "").slice(0, 10) : value;
+
+    if (name === "category" && v && products.length > 0) {
+      const seq = ++discountFetchSeq.current;
+      const brands = [...new Set(products.map((product) => product.make))];
+      setDiscountLoading(true);
+      try {
+        const discounts = await Promise.all(
+          brands.map(async (brand) => [
+            brand,
+            await fetchDiscountForBrand(brand, v),
+          ])
+        );
+        if (seq !== discountFetchSeq.current) return;
+
+        const discountByBrand = Object.fromEntries(discounts);
+        setProducts((previous) =>
+          previous.map((product) => ({
+            ...product,
+            discount: discountByBrand[product.make],
+          }))
+        );
+        setCustomer((previous) => ({ ...previous, [name]: v }));
+      } catch {
+        if (seq === discountFetchSeq.current) {
+          notify("error", "Could not load discounts for the selected category.");
+        }
+      } finally {
+        if (seq === discountFetchSeq.current) setDiscountLoading(false);
+      }
+      return;
+    }
+
     setCustomer((prev) => ({ ...prev, [name]: v }));
   };
 
@@ -201,8 +258,10 @@ export default function Quotations({ quotation = null, onDone }) {
     }
   };
 
-  // ---------- add product (same discount logic as before) ----------
+  // ---------- add product ----------
   const addProduct = async () => {
+    if (adding || discountLoading) return;
+
     const qty = Number(currentProduct.quantity);
 
     if (!currentProduct.productId) {
@@ -221,36 +280,43 @@ export default function Quotations({ quotation = null, onDone }) {
     }
 
     setAdding(true);
-    let discountPercent = 0;
     try {
-      const discountRes = await getDiscountByBrand(currentProduct.make);
-      if (discountRes.data) {
-        discountPercent =
-          Number(discountRes.data[`category_${customer.category}`]) || 0;
-      }
+      const discountPercent = await fetchDiscountForBrand(
+        currentProduct.make,
+        customer.category
+      );
+
+      setProducts((prev) => {
+        // same product added twice -> merge quantity instead of duplicate row
+        const idx = prev.findIndex((p) => p.productId === currentProduct.productId);
+        if (idx >= 0) {
+          return prev.map((p, i) =>
+            i === idx
+              ? {
+                  ...p,
+                  quantity: p.quantity + qty,
+                  discount: discountPercent,
+                }
+              : p
+          );
+        }
+        return [
+          ...prev,
+          { ...currentProduct, quantity: qty, discount: discountPercent },
+        ];
+      });
+
+      setCurrentProduct(emptyProduct);
+      setSearchText("");
+      searchRef.current?.focus();
     } catch {
-      discountPercent = 0;
+      notify(
+        "error",
+        `Could not load the discount for brand "${currentProduct.make || "unknown"}".`
+      );
     } finally {
       setAdding(false);
     }
-
-    setProducts((prev) => {
-      // same product added twice -> merge quantity instead of duplicate row
-      const idx = prev.findIndex((p) => p.productId === currentProduct.productId);
-      if (idx >= 0) {
-        return prev.map((p, i) =>
-          i === idx ? { ...p, quantity: p.quantity + qty } : p
-        );
-      }
-      return [
-        ...prev,
-        { ...currentProduct, quantity: qty, discount: discountPercent },
-      ];
-    });
-
-    setCurrentProduct(emptyProduct);
-    setSearchText("");
-    searchRef.current?.focus();
   };
 
   const handleQtyKeyDown = (e) => {
@@ -413,11 +479,14 @@ export default function Quotations({ quotation = null, onDone }) {
                 </label>
 
                 <label className="qt-field">
-                  <span>Price Category *</span>
+                  <span>
+                    Price Category *{discountLoading ? " · Loading discounts…" : ""}
+                  </span>
                   <select
                     name="category"
                     value={customer.category}
                     onChange={handleCustomerChange}
+                    disabled={discountLoading || adding}
                   >
                     <option value="">Select category</option>
                     {CATEGORIES.map((c) => (
@@ -508,9 +577,13 @@ export default function Quotations({ quotation = null, onDone }) {
                 <button
                   className="qt-btn primary"
                   onClick={addProduct}
-                  disabled={adding}
+                  disabled={adding || discountLoading}
                 >
-                  {adding ? "Adding…" : "+ Add"}
+                  {adding
+                    ? "Adding…"
+                    : discountLoading
+                    ? "Loading discounts…"
+                    : "+ Add"}
                 </button>
               </div>
             </section>
